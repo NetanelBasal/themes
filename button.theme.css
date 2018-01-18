@@ -1,0 +1,5 @@
+.button {
+   color: themify(primary-100);
+   background-color: themify(primary-200);
+   border: 1px solid themify(accent-100);
+}
