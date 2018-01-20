@@ -39,11 +39,9 @@ module.exports = postcss.plugin('datThemes', function datThemes( options ) {
           const extractValue = regExp.exec(decl.value)[1];
           themesNames.forEach(name => {
             const selectorGroup = `.${name} ${rule.selector}, ${name}${rule.selector}`;
-            /** [primary, 100] */
-            const split = extractValue.split('-');
 
             /** Replace themify() with the current value */
-            const rawValueIE = decl.value.replace(`themify(${extractValue})`, palette[name][split[0]][split[1]]);
+            const rawValueIE = decl.value.replace(`themify(${extractValue})`, variables[name][extractValue]);
             const rawValue = decl.value.replace(`themify(${extractValue})`, `var(--${extractValue})`);
             const declerations = [
               /** color: red or border: 1px solid red */
@@ -54,28 +52,47 @@ module.exports = postcss.plugin('datThemes', function datThemes( options ) {
 
             if( !selectors[selectorGroup] ) {
               selectors[selectorGroup] = {
-                declerations: new Set(declerations),
+                declerations: {
+                  ie      : new Set([declerations[0]]),
+                  defaults: new Set([declerations[1]])
+                },
                 selectorGroup
               }
             } else {
-              declerations.forEach(d => selectors[selectorGroup].declerations.add(d));
+              declerations.forEach(( d, i ) => {
+                if( i === 0 ) {
+                  selectors[selectorGroup].declerations.ie.add(d);
+                } else {
+                  selectors[selectorGroup].declerations.defaults.add(d);
+                }
+
+              });
             }
           });
         }
       });
     });
 
-    let output = '';
+    let outputIE = '';
 
     for( let selector in selectors ) {
       const raw = `${selectors[selector].selectorGroup} {
-         ${Array.from(selectors[selector].declerations).join(' ')}
+         ${Array.from(selectors[selector].declerations.ie).join(' ')}
       }`
-      output = `${output} ${raw}`
+      outputIE = `${outputIE} ${raw}`
     }
 
-    fs.writeFileSync('dist/output.css', new CleanCSS({}).minify(output).styles);
-    // fs.writeFileSync('dist/output.css', output);
+    let outputDefaults = '';
+
+    for( let selector in selectors ) {
+      const raw = `${selectors[selector].selectorGroup} {
+         ${Array.from(selectors[selector].declerations.defaults).join(' ')}
+      }`
+      outputDefaults = `${outputDefaults} ${raw}`
+    }
+    // fs.writeFileSync('dist/output.css', new CleanCSS({}).minify(output).styles);
+    fs.writeFileSync('dist/output-ie.css', outputIE);
+    fs.writeFileSync('dist/output-defaults.css', outputDefaults);
 
   }
 

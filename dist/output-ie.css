@@ -1,0 +1,23 @@
+.light .tooltip, light.tooltip {
+  color: #000;
+  background-color: #fff;
+  border: 1px solid red;
+}
+
+.dark .tooltip, dark.tooltip {
+  color: #fff;
+  background-color: #000;
+  border: 1px solid yellow;
+}
+
+.light .button, light.button {
+  color: #000;
+  background-color: #fff;
+  border: 1px solid red;
+}
+
+.dark .button, dark.button {
+  color: #fff;
+  background-color: #000;
+  border: 1px solid yellow;
+}
